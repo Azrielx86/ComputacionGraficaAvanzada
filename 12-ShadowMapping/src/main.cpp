@@ -352,7 +352,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	// Init glew
 	glewExperimental = GL_TRUE;
 	GLenum err = glewInit();
-	if (GLEW_OK != err) {
+	if (GLEW_OK != err && GLEW_ERROR_NO_GLX_DISPLAY != err) {
 		std::cerr << "Failed to initialize glew" << std::endl;
 		exit(-1);
 	}
