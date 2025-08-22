@@ -16,3 +16,8 @@ RemoteSystemsTempFiles/
 .metadata/
 bin/*
 build/*
+/*build*
+/vcpkg_installed
+.cache/
+.idea/
+.vscode/
