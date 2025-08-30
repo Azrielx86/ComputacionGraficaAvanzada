@@ -81,6 +81,14 @@ Model modelDartLegoLeftHand;
 Model modelDartLegoRightHand;
 Model modelDartLegoLeftLeg;
 Model modelDartLegoRightLeg;
+/* Model Buzz */
+Model modelBuzzTorso;
+Model modelBuzzHead;
+Model modelBuzzLeftArm;
+Model modelBuzzLeftForearm;
+Model modelBuzzLeftHand;
+Model modelBuzzLeftLeg;
+
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint skyboxTextureID;
@@ -112,7 +120,11 @@ glm::mat4 modelMatrixLambo = glm::mat4(1.0);
 glm::mat4 modelMatrixAircraft = glm::mat4(1.0);
 glm::mat4 modelMatrixDart = glm::mat4(1.0f);
 
+glm::mat4 modelMatrixBuzz(1.0);
+glm::mat4 modelMatrixBuzzTorso(1.0);
+
 float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRightArm = 0.0, rotDartRightHand = 0.0, rotDartLeftLeg = 0.0, rotDartRightLeg = 0.0;
+float rotBuzzHead = 0.0, rotBuzzLeftArm = 0.0, rotBuzzLeftForearm = 0.0, rotBuzzLeftHand = 0.0;
 int modelSelected = 0;
 bool enableCountSelected = true;
 
@@ -268,6 +280,18 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelLamboRearRightWheel.loadModel("../models/Lamborginhi_Aventador_OBJ/Lamborghini_Aventador_rear_right_wheel.obj");
 	modelLamboRearRightWheel.setShader(&shaderMulLighting);
 
+	// Model
+	modelBuzzTorso.loadModel("../models/buzz/buzzlightyTorso.obj");
+	modelBuzzTorso.setShader(&shaderMulLighting);
+	modelBuzzHead.loadModel("../models/buzz/buzzlightyHead.obj");
+	modelBuzzHead.setShader(&shaderMulLighting);
+	modelBuzzLeftArm.loadModel("../models/buzz/buzzlightyLeftArm.obj");
+	modelBuzzLeftArm.setShader(&shaderMulLighting);
+	modelBuzzLeftForearm.loadModel("../models/buzz/buzzlightyLeftForearm.obj");
+	modelBuzzLeftForearm.setShader(&shaderMulLighting);
+	modelBuzzLeftHand.loadModel("../models/buzz/buzzlightyLeftHand.obj");
+	modelBuzzLeftHand.setShader(&shaderMulLighting);
+
 	// Dart Lego
 	modelDartLegoBody.loadModel("../models/LegoDart/LeoDart_body.obj");
 	modelDartLegoBody.setShader(&shaderMulLighting);
@@ -289,7 +313,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelDartLegoRightLeg.setShader(&shaderMulLighting);
 
 	camera->setPosition(glm::vec3(0.0, 3.0, 4.0));
-	
+
 	// Carga de texturas para el skybox
 	Texture skyboxTexture = Texture("");
 	glGenTextures(1, &skyboxTextureID);
@@ -444,7 +468,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 		textureLandingPad.getChannels() == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, textureLandingPad.getData());
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
-	else 
+	else
 		std::cout << "Fallo la carga de textura" << std::endl;
 	textureLandingPad.freeImage(); // Liberamos memoria
 
@@ -493,6 +517,12 @@ void destroy() {
 	modelLamboRearRightWheel.destroy();
 	modelLamboRightDor.destroy();
 	modelRock.destroy();
+
+	modelBuzzHead.destroy();
+	modelBuzzTorso.destroy();
+	modelBuzzLeftArm.destroy();
+	modelBuzzLeftForearm.destroy();
+	modelBuzzLeftHand.destroy();
 
 	// Textures Delete
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -665,13 +695,15 @@ void applicationLoop() {
 
 	modelMatrixEclipse = glm::translate(modelMatrixEclipse, glm::vec3(27.5, 0, 30.0));
 	modelMatrixEclipse = glm::rotate(modelMatrixEclipse, glm::radians(180.0f), glm::vec3(0, 1, 0));
-	int state = 0;
+	int state = 1;
 	float advanceCount = 0.0;
 	float rotCount = 0.0;
 	float rotWheelsX = 0.0;
 	float rotWheelsY = 0.0;
 	int numberAdvance = 0;
-	int maxAdvance = 0.0;
+	float maxAdvance = 0.0;
+	const float avance = 0.1f;
+	const float giroEclipse = 0.5f;
 
 	matrixModelRock = glm::translate(matrixModelRock, glm::vec3(-3.0, 0.0, 2.0));
 
@@ -682,6 +714,8 @@ void applicationLoop() {
 	modelMatrixLambo = glm::translate(modelMatrixLambo, glm::vec3(23.0, 0.0, 0.0));
 
 	modelMatrixDart = glm::translate(modelMatrixDart, glm::vec3(3.0, 0.0, 20.0));
+
+	modelMatrixBuzz = glm::translate(modelMatrixBuzz, {10.0f, 0.0f, -10.0f});
 
 	// Variables to interpolation key frames
 	fileName = "../animaciones/animation_dart_joints.txt";
@@ -978,6 +1012,26 @@ void applicationLoop() {
 		// Se regresa el cull faces IMPORTANTE para la capa
 		glEnable(GL_CULL_FACE);
 
+		/*
+		 * Model Buzz
+		 */
+		auto modelMatrixTorso = glm::mat4(modelMatrixBuzz);
+		modelMatrixTorso = glm::scale(modelMatrixTorso, {4.0f, 4.0f, 4.0f});
+		modelBuzzTorso.render(modelMatrixTorso);
+
+		const auto modelBuzzMatrixHead = glm::mat4(modelMatrixTorso);
+		modelBuzzHead.render(modelBuzzMatrixHead);
+
+		const auto modelMatrixLeftArm = glm::mat4(modelMatrixTorso);
+		modelBuzzLeftArm.render(modelMatrixLeftArm);
+
+		const auto modelMatrixBuzzLeftForearm = glm::mat4(modelMatrixLeftArm);
+		modelBuzzLeftForearm.render(modelMatrixBuzzLeftForearm);
+
+		const auto modelMatrixBuzzLeftHand = glm::mat4(modelMatrixBuzzLeftForearm);
+		modelBuzzLeftHand.render(modelMatrixBuzzLeftHand);
+
+
 		/*******************************************
 		 * Skybox
 		 *******************************************/
@@ -996,6 +1050,39 @@ void applicationLoop() {
 
 		// Constantes de animaciones
 		rotHelHelY += 0.5;
+
+		switch (state) {
+			case 1:
+				if (numberAdvance == 0) maxAdvance = 65.0f;
+				else if (numberAdvance == 1) maxAdvance = 49.0f;
+				else if (numberAdvance == 2) maxAdvance = 44.5f;
+				else if (numberAdvance == 3) maxAdvance = 49.0f;
+				else if (numberAdvance == 4) maxAdvance = 44.5f;
+				state = 2;
+				break;
+			case 2:
+				modelMatrixEclipse = glm::translate(modelMatrixEclipse, {0.0f, 0.0f, avance});
+				advanceCount += avance;
+				if (advanceCount > maxAdvance) {
+					advanceCount = 0;
+					numberAdvance++;
+					state = 3;
+				}
+				break;
+			case 3:
+				modelMatrixEclipse = glm::translate(modelMatrixEclipse, {0.0f, 0.0f, 0.025f});
+				modelMatrixEclipse = glm::rotate(modelMatrixEclipse, glm::radians(giroEclipse), {0.0f, 1.0f, 0.0f});
+				rotCount += giroEclipse;
+				if (rotCount >= 90.0f) {
+					state = 1;
+					rotCount = 0;
+					if (numberAdvance > 4) {
+						numberAdvance = 1;
+					}
+				}
+				break;
+			default: break;
+		}
 
 		glfwSwapBuffers(window);
 	}
