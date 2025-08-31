@@ -1,0 +1,23 @@
+{
+  "name": "opengl-playground",
+  "version": "1.0.0",
+  "dependencies": [
+    "assimp",
+    "freeimage",
+    "freetype",
+    "glew",
+    "glfw3",
+    "glm",
+    {
+      "name": "imgui",
+      "features": [
+        "glfw-binding",
+        "opengl3-binding"
+      ]
+    },
+    "openal-soft",
+    "opengl",
+    "stb",
+    "freealut"
+  ]
+}

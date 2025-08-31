@@ -34,6 +34,8 @@ if (VCPKG_TOOLCHAIN)
     find_package(glm CONFIG REQUIRED)
     find_package(freeimage CONFIG REQUIRED)
     find_package(Freetype REQUIRED)
+    find_package(OpenAL CONFIG REQUIRED)
+    find_package(FreeALUT CONFIG REQUIRED)
 
     add_library(CGALib SHARED ${CGALib_SRC})
 
@@ -44,6 +46,7 @@ if (VCPKG_TOOLCHAIN)
     target_link_libraries(CGALib PRIVATE assimp::assimp)
     target_link_libraries(CGALib PRIVATE freeimage::FreeImage freeimage::FreeImagePlus)
     target_link_libraries(CGALib PRIVATE Freetype::Freetype)
+    target_link_libraries(CGALib PRIVATE OpenAL::OpenAL FreeALUT::alut)
 else ()
     if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
         include_directories(
