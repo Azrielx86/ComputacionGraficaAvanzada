@@ -1,5 +1,13 @@
 add_definitions(-DBUILDING_DLL) # Define a macro indicating DLL import
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message(STATUS "Compiling Debug version.")
+    add_compile_options(-O0 -g3 -DDEBUG)
+    add_link_options(-O0 -g3 -DDEBUG)
+else ()
+    add_compile_options(-O3)
+endif ()
+
 if (VCPKG_TOOLCHAIN)
     set(OpenGL_GL_PREFERENCE GLVND)
 
