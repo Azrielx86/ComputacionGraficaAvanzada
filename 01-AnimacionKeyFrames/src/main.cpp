@@ -820,7 +820,7 @@ void applicationLoop() {
 	modelMatrixBuzz = glm::translate(modelMatrixBuzz, {10.0f, 0.0f, -10.0f});
 
 	// Máquinas de estado para las animaciones
-	eclipseAnimation.AddState(1, [&maxAdvance, &numberAdvance](float)
+	eclipseAnimation.AddState(1, [&maxAdvance, &numberAdvance](float) -> int
 	{
 		if (numberAdvance == 0) maxAdvance = 65.0f;
 		else if (numberAdvance == 1) maxAdvance = 49.0f;
@@ -828,7 +828,7 @@ void applicationLoop() {
 		else if (numberAdvance == 3) maxAdvance = 49.0f;
 		else if (numberAdvance == 4) maxAdvance = 40.5f;
 		return 2;
-	}).AddState(2, [&advanceCount, &avance, &maxAdvance, &numberAdvance, &rotWheelsX, &rotWheelsY](float)
+	}).AddState(2, [&advanceCount, &avance, &maxAdvance, &numberAdvance, &rotWheelsX, &rotWheelsY](float) -> int
 	{
 		modelMatrixEclipse = glm::translate(modelMatrixEclipse, {0.0f, 0.0f, avance});
 		advanceCount += avance;
@@ -844,7 +844,7 @@ void applicationLoop() {
 			return 3;
 		}
 		return 2;
-	}).AddState(3, [&rotCount, &giroEclipse, &numberAdvance, &rotWheelsX, &rotWheelsY](float)
+	}).AddState(3, [&rotCount, &giroEclipse, &numberAdvance, &rotWheelsX, &rotWheelsY](float) -> int
 	{
 		modelMatrixEclipse = glm::translate(modelMatrixEclipse, {0.0f, 0.0f, 0.025f});
 		modelMatrixEclipse = glm::rotate(modelMatrixEclipse, glm::radians(giroEclipse), {0.0f, 1.0f, 0.0f});
@@ -864,7 +864,7 @@ void applicationLoop() {
 		return 3;
 	}).SetState(1);
 
-	lamboAnimation.AddState(0, [&lamboVariables](float)
+	lamboAnimation.AddState(0, [&lamboVariables](float) -> int
 	{
 		switch (lamboVariables.numberAdvance)
 		{
@@ -876,7 +876,7 @@ void applicationLoop() {
 		default: lamboVariables.maxAdvance = 10.0f;
 		}
 		return 1;
-	}).AddState(1, [&lamboVariables](float)
+	}).AddState(1, [&lamboVariables](float) -> int
 	{
 		modelMatrixLambo = glm::translate(modelMatrixLambo, {0.0f, 0.0f, lamboVariables.advance});
 		lamboVariables.advanceCount += lamboVariables.advance;
@@ -893,7 +893,7 @@ void applicationLoop() {
 			return 2;
 		}
 		return 1;
-	}).AddState(2, [&lamboVariables](float)
+	}).AddState(2, [&lamboVariables](float) -> int
 	{
 		if (lamboVariables.numberAdvance > 4) return 3;
 		modelMatrixLambo = glm::translate(modelMatrixLambo, {0.0f, 0.0f, 0.025f});
@@ -911,11 +911,11 @@ void applicationLoop() {
 			return 0;
 		}
 		return 2;
-	}).AddState(3, [&lamboVariables](float)
+	}).AddState(3, [&lamboVariables](float) -> int
 	{
 		lamboVariables.rotDoorLeft += 0.35f;
 		return lamboVariables.rotDoorLeft >= 45.0f ? 4 : 3;
-	}).AddState(4, [](float){ return 4; }).SetState(0);
+	}).AddState(4, [](float) -> int { return 4; }).SetState(0);
 
 	// Variables to interpolation key frames
 	fileName = "../animaciones/animation_dart_joints.txt";
