@@ -193,20 +193,20 @@ float rotBuzzHead = 0;
 float rotBuzzLeftArm = 0;
 float rotBuzzLeftForearm = 0;
 float rotBuzzLeftHand = 0;
-float rotBuzzHip = 0;
-float rotBuzzLeftCalf = 0;
-float rotBuzzLeftFoot = 0;
-float rotBuzzLeftThigh = 0;
-float rotBuzzLeftWing1 = 0;
-float rotBuzzLeftWing2 = 0;
-float rotBuzzRightArm = 0;
-float rotBuzzRightCalf = 0;
-float rotBuzzRightFoot = 0;
 float rotBuzzRightForearm = 0;
 float rotBuzzRightHand = 0;
+float rotBuzzRightArm = 0;
+float rotBuzzHip = 0;
+float rotBuzzLeftThigh = 0;
+float rotBuzzLeftCalf = 0;
+float rotBuzzLeftFoot = 0;
 float rotBuzzRightThigh = 0;
+float rotBuzzRightCalf = 0;
+float rotBuzzRightFoot = 0;
 float rotBuzzRightWing1 = 0;
 float rotBuzzRightWing2 = 0;
+float rotBuzzLeftWing1 = 0;
+float rotBuzzLeftWing2 = 0;
 
 int modelSelected = 0;
 bool enableCountSelected = true;
@@ -1088,6 +1088,10 @@ void applicationLoop() {
 		// Variables donde se guardan las matrices de cada articulacion por 1 frame
 		std::vector<float> matrixDartJoints;
 		std::vector<glm::mat4> matrixDart;
+
+		std::vector<float> matrixBuzzJoints;
+		std::vector<glm::mat4> matrixBuzz;
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f),
@@ -1512,6 +1516,7 @@ void applicationLoop() {
 		// Constantes de animaciones
 		rotHelHelY += 0.5;
 
+		// region Darth Vader animations
 		if (record && modelSelected == 1)
 		{
 			matrixDartJoints.push_back(rotDartHead);
@@ -1530,7 +1535,7 @@ void applicationLoop() {
 		}
 		else if (!keyFramesDartJoints.empty()) // Para reproducir el frame
 		{
-			interpolationDartJoints = numPasosDartJoints / static_cast<float>(maxNumPasosDartJoints);
+			interpolationDartJoints = static_cast<float>(numPasosDartJoints) / static_cast<float>(maxNumPasosDartJoints);
 			numPasosDartJoints++;
 
 			if (interpolationDartJoints > 1.0)
@@ -1564,7 +1569,7 @@ void applicationLoop() {
 		}
 		else if (!keyFramesDart.empty())
 		{
-			interpolationDart = numPasosDart / static_cast<float>(maxNumPasosDart);
+			interpolationDart = static_cast<float>(numPasosDart) / static_cast<float>(maxNumPasosDart);
 			numPasosDart++;
 			if (interpolationDart > 1.0)
 			{
@@ -1579,6 +1584,82 @@ void applicationLoop() {
 
 			modelMatrixDart = interpolate(keyFramesDart, indexFrameDart, indexFrameDartNext, 0, interpolationDart);
 		}
+		// endregion Darth Vader animations
+
+		// region Buzz animations
+		if (record && modelSelected == 3)
+		{
+			matrixBuzzJoints.push_back(rotBuzzHead);
+
+			if (saveFrame)
+			{
+				saveFrame = false;
+				appendFrame(myfile, matrixBuzzJoints);
+			}
+		}
+		else if (!keyFramesBuzzJoints.empty()) // Para reproducir el frame
+		{
+			interpolationBuzzJoints = static_cast<float>(numPasosBuzzJoints) / static_cast<float>(maxNumPasosBuzzJoints);
+			numPasosBuzzJoints++;
+
+			if (interpolationBuzzJoints > 1.0)
+			{
+				interpolationBuzzJoints = 0;
+				numPasosBuzzJoints = 0;
+				indexFrameBuzzJoints = indexFrameBuzzJointsNext;
+				indexFrameBuzzJointsNext++;
+			}
+
+			if (indexFrameBuzzJointsNext > keyFramesBuzzJoints.size() - 1)
+				indexFrameBuzzJointsNext = 0;
+
+			rotBuzzHead = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 0, interpolationBuzzJoints);
+			rotBuzzLeftArm = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 1, interpolationBuzzJoints);
+			rotBuzzLeftForearm = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 2, interpolationBuzzJoints);
+			rotBuzzLeftHand = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 3, interpolationBuzzJoints);
+			rotBuzzRightForearm = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 4, interpolationBuzzJoints);
+			rotBuzzRightHand = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 5, interpolationBuzzJoints);
+			rotBuzzRightArm = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 6, interpolationBuzzJoints);
+			rotBuzzHip = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 7, interpolationBuzzJoints);
+			rotBuzzLeftThigh = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 8, interpolationBuzzJoints);
+			rotBuzzLeftCalf = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 9, interpolationBuzzJoints);
+			rotBuzzLeftFoot = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 10, interpolationBuzzJoints);
+			rotBuzzRightThigh = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 11, interpolationBuzzJoints);
+			rotBuzzRightCalf = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 12, interpolationBuzzJoints);
+			rotBuzzRightFoot = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 13, interpolationBuzzJoints);
+			rotBuzzRightWing1 = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 14, interpolationBuzzJoints);
+			rotBuzzRightWing2 = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 15, interpolationBuzzJoints);
+			rotBuzzLeftWing1 = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 16, interpolationBuzzJoints);
+			rotBuzzLeftWing2 = interpolate(keyFramesBuzzJoints, indexFrameBuzzJoints, indexFrameBuzzJointsNext, 17, interpolationBuzzJoints);
+		}
+
+		if (record && modelSelected == 4)
+		{
+			matrixBuzz.push_back(modelMatrixBuzz);
+			if (saveFrame)
+			{
+				saveFrame = false;
+				appendFrame(myfile, matrixBuzz);
+			}
+		}
+		else if (!keyFramesBuzz.empty())
+		{
+			interpolationBuzz = static_cast<float>(numPasosBuzz) / static_cast<float>(maxNumPasosBuzz);
+			numPasosBuzz++;
+			if (interpolationBuzz > 1.0)
+			{
+				numPasosBuzz = 0;
+				interpolationBuzz = 0;
+				indexFrameBuzz = indexFrameBuzzNext;
+				indexFrameBuzzNext++;
+			}
+
+			if (indexFrameBuzzNext > keyFramesBuzz.size() - 1)
+				indexFrameBuzzNext = 0;
+
+			modelMatrixBuzz = interpolate(keyFramesBuzz, indexFrameBuzz, indexFrameBuzzNext, 0, interpolationBuzz);
+		}
+		// endregion Buzz animations
 
 		eclipseAnimation.Update(static_cast<float>(deltaTime));
 		lamboAnimation.Update(static_cast<float>(deltaTime));
