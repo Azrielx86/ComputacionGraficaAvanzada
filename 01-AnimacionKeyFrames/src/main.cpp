@@ -785,6 +785,9 @@ bool processInput(bool continueApplication) {
 	else if (modelSelected == 2 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		modelMatrixDart = glm::translate(modelMatrixDart, glm::vec3(0.02, 0.0, 0.0));
 
+	// Controles Buzz
+
+
 	glfwPollEvents();
 	return continueApplication;
 }
@@ -1322,6 +1325,74 @@ void applicationLoop() {
 
 		// Constantes de animaciones
 		rotHelHelY += 0.5;
+
+		if (record && modelSelected == 1)
+		{
+			matrixDartJoints.push_back(rotDartHead);
+			matrixDartJoints.push_back(rotDartLeftArm);
+			matrixDartJoints.push_back(rotDartLeftHand);
+			matrixDartJoints.push_back(rotDartRightArm);
+			matrixDartJoints.push_back(rotDartRightHand);
+			matrixDartJoints.push_back(rotDartLeftLeg);
+			matrixDartJoints.push_back(rotDartRightLeg);
+
+			if (saveFrame)
+			{
+				saveFrame = false;
+				appendFrame(myfile, matrixDartJoints);
+			}
+		}
+		else if (!keyFramesDartJoints.empty()) // Para reproducir el frame
+		{
+			interpolationDartJoints = numPasosDartJoints / static_cast<float>(maxNumPasosDartJoints);
+			numPasosDartJoints++;
+
+			if (interpolationDartJoints > 1.0)
+			{
+				interpolationDartJoints = 0;
+				numPasosDartJoints = 0;
+				indexFrameDartJoints = indexFrameDartJointsNext;
+				indexFrameDartJointsNext++;
+			}
+
+			if (indexFrameDartJointsNext > keyFramesDartJoints.size() - 1)
+				indexFrameDartJointsNext = 0;
+
+			rotDartHead = interpolate(keyFramesDartJoints, indexFrameDartJoints, indexFrameDartJointsNext, 0, interpolationDartJoints);
+			rotDartLeftArm = interpolate(keyFramesDartJoints, indexFrameDartJoints, indexFrameDartJointsNext, 1, interpolationDartJoints);
+			rotDartLeftHand = interpolate(keyFramesDartJoints, indexFrameDartJoints, indexFrameDartJointsNext, 2, interpolationDartJoints);
+			rotDartRightArm = interpolate(keyFramesDartJoints, indexFrameDartJoints, indexFrameDartJointsNext, 3, interpolationDartJoints);
+			rotDartRightHand = interpolate(keyFramesDartJoints, indexFrameDartJoints, indexFrameDartJointsNext, 4, interpolationDartJoints);
+			rotDartLeftLeg = interpolate(keyFramesDartJoints, indexFrameDartJoints, indexFrameDartJointsNext, 5, interpolationDartJoints);
+			rotDartRightLeg = interpolate(keyFramesDartJoints, indexFrameDartJoints, indexFrameDartJointsNext, 6, interpolationDartJoints);
+		}
+
+		if (record && modelSelected == 2)
+		{
+			matrixDart.push_back(modelMatrixDart);
+			if (saveFrame)
+			{
+				saveFrame = false;
+				appendFrame(myfile, matrixDart);
+			}
+		}
+		else if (!keyFramesDart.empty())
+		{
+			interpolationDart = numPasosDart / static_cast<float>(maxNumPasosDart);
+			numPasosDart++;
+			if (interpolationDart > 1.0)
+			{
+				numPasosDart = 0;
+				interpolationDart = 0;
+				indexFrameDart = indexFrameDartNext;
+				indexFrameDartNext++;
+			}
+
+			if (indexFrameDartNext > keyFramesDart.size() - 1)
+				indexFrameDartNext = 0;
+
+			modelMatrixDart = interpolate(keyFramesDart, indexFrameDart, indexFrameDartNext, 0, interpolationDart);
+		}
 
 		eclipseAnimation.Update(static_cast<float>(deltaTime));
 		lamboAnimation.Update(static_cast<float>(deltaTime));
