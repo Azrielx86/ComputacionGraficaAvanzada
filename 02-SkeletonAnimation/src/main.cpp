@@ -90,6 +90,12 @@ Model modelBuzzLeftArm;
 Model modelBuzzLeftForeArm;
 Model modelBuzzLeftHand;
 
+// Carga de modelos animados
+Model cowboyModelAnimate;
+Model guardianModelAnimate;
+Model mayowModelAnimate;
+Model cyborgModelAnimate;
+
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint skyboxTextureID;
 
@@ -120,6 +126,15 @@ glm::mat4 modelMatrixLambo = glm::mat4(1.0);
 glm::mat4 modelMatrixAircraft = glm::mat4(1.0);
 glm::mat4 modelMatrixDart = glm::mat4(1.0f);
 glm::mat4 modelMatrixBuzz = glm::mat4(1.0f);
+glm::mat4 modelMatrixCowboy(1.0f);
+glm::mat4 modelMatrixGuardian(1.0f);
+glm::mat4 modelMatrixMayow(1.0f);
+glm::mat4 modelMatrixCyborg(1.0f);
+
+int animationCowboyIndex = 1;
+int animationGuardianIndex = 1;
+int animationMayowIndex = 1;
+int animationCyborgIndex = 1;
 
 float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRightArm = 0.0, rotDartRightHand = 0.0, rotDartLeftLeg = 0.0, rotDartRightLeg = 0.0;
 float rotBuzzHead = 0.0, rotBuzzLeftarm = 0.0, rotBuzzLeftForeArm = 0.0, rotBuzzLeftHand = 0.0;
@@ -319,8 +334,20 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelDartLegoRightLeg.loadModel("../models/LegoDart/LeoDart_right_leg.obj");
 	modelDartLegoRightLeg.setShader(&shaderMulLighting);
 
-	
-	// Buzz
+	// Carga modelos animados
+	cowboyModelAnimate.loadModel("../models/cowboy/Character Running.fbx");
+	cowboyModelAnimate.setShader(&shaderMulLighting);
+
+	guardianModelAnimate.loadModel("../models/boblampclean/boblampclean.md5mesh");
+	guardianModelAnimate.setShader(&shaderMulLighting);
+
+	mayowModelAnimate.loadModel("../models/mayow/personaje.fbx");
+	mayowModelAnimate.setShader(&shaderMulLighting);
+
+	cyborgModelAnimate.loadModel("../models/cyborg/Cyborg-2026-1.fbx");
+	cyborgModelAnimate.setShader(&shaderMulLighting);
+
+	// Buzzz
 	modelBuzzTorso.loadModel("../models/buzz/buzzlightyTorso.obj");
 	modelBuzzTorso.setShader(&shaderMulLighting);
 	modelBuzzHead.loadModel("../models/buzz/buzzlightyHead.obj");
@@ -543,6 +570,11 @@ void destroy() {
 	modelBuzzLeftForeArm.destroy();
 	modelBuzzLeftHand.destroy();
 	modelBuzzTorso.destroy();
+
+	mayowModelAnimate.destroy();
+	// cyborgModelAnimate.destroy();
+	cowboyModelAnimate.destroy();
+	guardianModelAnimate.destroy();
 
 	// Textures Delete
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -776,6 +808,14 @@ void applicationLoop() {
 	modelMatrixDart = glm::translate(modelMatrixDart, glm::vec3(3.0, 0.0, 20.0));
 
 	modelMatrixBuzz = glm::translate(modelMatrixBuzz, glm::vec3(15.0, 0.0, -10.0));
+
+	modelMatrixCowboy = glm::translate(modelMatrixCowboy, {13.0f, 0.05f, 0.0f});
+
+	modelMatrixGuardian = glm::translate(modelMatrixGuardian, {15.0f, 0.0f, 0.0f});
+
+	modelMatrixMayow = glm::translate(modelMatrixMayow, {13.0f, 0.0f, -7.0f});
+
+	modelMatrixCyborg = glm::translate(modelMatrixCyborg, {5.0f, 0.0f, 0.0f});
 
 	// Variables to interpolation key frames
 	fileName = "../animaciones/animation_dart_joints.txt";
@@ -1111,6 +1151,18 @@ void applicationLoop() {
 		modelMatrixLeftHand = glm::rotate(modelMatrixLeftHand, glm::radians(-45.0f), glm::vec3(0, 1, 0));
 		modelMatrixLeftHand = glm::translate(modelMatrixLeftHand, glm::vec3(-0.416066, -0.587046, -0.076258));
 		modelBuzzLeftHand.render(modelMatrixLeftHand);
+
+		auto modelMatrixCowboyBody = glm::mat4(modelMatrixCowboy);
+		modelMatrixCowboyBody = glm::scale(modelMatrixCowboyBody, glm::vec3(0.002f));
+		cowboyModelAnimate.render(modelMatrixCowboyBody);
+
+		auto modelMatrixGuardianBody = glm::mat4(modelMatrixGuardian);
+		modelMatrixGuardianBody = glm::scale(modelMatrixGuardianBody, glm::vec3(0.1f));
+		guardianModelAnimate.render(modelMatrixGuardianBody);
+
+		mayowModelAnimate.render(glm::scale(modelMatrixMayow, glm::vec3(0.02)));
+
+		cyborgModelAnimate.render(glm::scale(modelMatrixCyborg, glm::vec3(0.01f)));
 
 		/*******************************************
 		 * Skybox
