@@ -155,6 +155,9 @@ Model modelBuzzRightThigh;
 Model modelBuzzRightWing1;
 Model modelBuzzRightWing2;
 
+// Custom models
+Model modelTwoB;
+
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint skyboxTextureID;
@@ -186,6 +189,7 @@ glm::mat4 modelMatrixLambo = glm::mat4(1.0);
 glm::mat4 modelMatrixAircraft = glm::mat4(1.0);
 glm::mat4 modelMatrixDart = glm::mat4(1.0f);
 glm::mat4 modelMatrixBuzz(1.0);
+glm::mat4 modelMatrixTwoB(1.0f);
 
 float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRightArm = 0.0, rotDartRightHand = 0.0, rotDartLeftLeg = 0.0, rotDartRightLeg = 0.0;
 
@@ -443,6 +447,10 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelDartLegoRightLeg.loadModel("../models/LegoDart/LeoDart_right_leg.obj");
 	modelDartLegoRightLeg.setShader(&shaderMulLighting);
 
+	// Custom models
+	modelTwoB.loadModel("../models/2b/2b.fbx");
+	modelTwoB.setShader(&shaderMulLighting);
+
 	camera->setPosition(glm::vec3(0.0, 3.0, 4.0));
 
 	// Carga de texturas para el skybox
@@ -668,6 +676,8 @@ void destroy() {
 	modelBuzzRightThigh.destroy();
 	modelBuzzRightWing1.destroy();
 	modelBuzzRightWing2.destroy();
+
+	modelTwoB.destroy();
 
 	// Textures Delete
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -967,6 +977,9 @@ void applicationLoop() {
 	modelMatrixDart = glm::translate(modelMatrixDart, glm::vec3(10.0, 0.0, 0.0));
 
 	modelMatrixBuzz = glm::translate(modelMatrixBuzz, {10.0f, 0.0f, -10.0f});
+
+	modelMatrixTwoB = glm::translate(modelMatrixTwoB, {10.0f, 0.0f, -10.0f});
+	modelMatrixTwoB = glm::scale(modelMatrixTwoB, glm::vec3(0.8f));
 
 	// Máquinas de estado para las animaciones
 	eclipseAnimation.AddState(1, [&maxAdvance, &numberAdvance](float) -> int
@@ -1496,6 +1509,12 @@ void applicationLoop() {
 		auto modelMatrixBuzzRightWing2 = glm::mat4(modelMatrixBuzzRightWing1);
 		modelBuzzRightWing2.render(modelMatrixBuzzRightWing2);
 		// endregion Buzz
+
+		// region ExtraModels
+
+		modelTwoB.render();
+
+		// endregion ExtraModels
 
 		// region Skybox
 		/*******************************************
