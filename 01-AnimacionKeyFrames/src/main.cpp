@@ -117,6 +117,7 @@ Model modelEclipseRearWheels;
 Model modelEclipseFrontalWheels;
 Model modelHeliChasis;
 Model modelHeliHeli;
+Model modelHeliHeliBack;
 Model modelLambo;
 Model modelLamboLeftDor;
 Model modelLamboRightDor;
@@ -157,7 +158,7 @@ Model modelBuzzRightWing2;
 
 // Custom models
 Model modelTwoB;
-
+Model modelTurret;
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint skyboxTextureID;
@@ -251,6 +252,9 @@ int numPasosBuzz = 0;
 
 // Var animate helicopter
 float rotHelHelY = 0.0;
+float speedRotHelHelY = 0.0;
+float rotHelBackHel = 0.0;
+float speedRotHelBackHel = 0.0;
 
 // Var animate lambo dor
 int stateDoor = 0;
@@ -261,6 +265,7 @@ double currTime, lastTime;
 
 AnimatorStateMachine eclipseAnimation;
 AnimatorStateMachine lamboAnimation;
+AnimatorStateMachine helicAnimation;
 
 // Se definen todos las funciones.
 void reshapeCallback(GLFWwindow *Window, int widthRes, int heightRes);
@@ -366,10 +371,13 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelEclipseRearWheels.loadModel("../models/Eclipse/2003eclipse_rear_wheels.obj");
 	modelEclipseRearWheels.setShader(&shaderMulLighting);
 	// Helicopter
-	modelHeliChasis.loadModel("../models/Helicopter/Mi_24_chasis.obj");
+	modelHeliChasis.loadModel("../models/Helicopter/Mi_24_chasis_NoH.obj");
 	modelHeliChasis.setShader(&shaderMulLighting);
 	modelHeliHeli.loadModel("../models/Helicopter/Mi_24_heli.obj");
 	modelHeliHeli.setShader(&shaderMulLighting);
+	modelHeliHeliBack.loadModel("../models/Helicopter/Mi_24_chasis_Back_Heli.obj");
+	modelHeliHeliBack.setShader(&shaderMulLighting);
+
 	// Lamborginhi
 	modelLambo.loadModel("../models/Lamborginhi_Aventador_OBJ/Lamborghini_Aventador_chasis.obj");
 	modelLambo.setShader(&shaderMulLighting);
@@ -450,6 +458,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	// Custom models
 	modelTwoB.loadModel("../models/2b/2b.fbx");
 	modelTwoB.setShader(&shaderMulLighting);
+	modelTurret.loadModel("../models/turret/turret_model.fbx");
+	modelTurret.setShader(&shaderMulLighting);
 
 	camera->setPosition(glm::vec3(0.0, 3.0, 4.0));
 
@@ -960,15 +970,19 @@ void applicationLoop() {
 	float rotWheelsY = 0.0;
 	int numberAdvance = 0;
 	float maxAdvance = 0.0;
-	const float avance = 0.1f;
-	const float giroEclipse = 0.5f;
+	constexpr float avance = 0.1f;
+	constexpr float giroEclipse = 0.5f;
 	LamboVariables lamboVariables = {};
 	lamboVariables.advance = 0.35f;
 	lamboVariables.spin = 0.75f;
 
+	float avanceHelicoptero = 0.0f;
+	float giroHelicoptero = 0.0f;
+	float giroHelices = 0.5f;
+
 	matrixModelRock = glm::translate(matrixModelRock, glm::vec3(-3.0, 0.0, 2.0));
 
-	modelMatrixHeli = glm::translate(modelMatrixHeli, glm::vec3(5.0, 10.0, -5.0));
+	modelMatrixHeli = glm::translate(modelMatrixHeli, glm::vec3(5.0, 10.0, -45.0));
 
 	modelMatrixAircraft = glm::translate(modelMatrixAircraft, glm::vec3(10.0, 2.0, -17.5));
 
@@ -978,10 +992,11 @@ void applicationLoop() {
 
 	modelMatrixBuzz = glm::translate(modelMatrixBuzz, {10.0f, 0.0f, -10.0f});
 
-	modelMatrixTwoB = glm::translate(modelMatrixTwoB, {10.0f, 0.0f, -10.0f});
-	modelMatrixTwoB = glm::scale(modelMatrixTwoB, glm::vec3(0.8f));
+	modelMatrixTwoB = glm::translate(modelMatrixTwoB, {-2.0f, 0.0f, -2.0f});
+	modelMatrixTwoB = glm::scale(modelMatrixTwoB, glm::vec3(1.5f));
 
 	// Máquinas de estado para las animaciones
+	// region Animación eclipse
 	eclipseAnimation.AddState(1, [&maxAdvance, &numberAdvance](float) -> int
 	{
 		if (numberAdvance == 0) maxAdvance = 65.0f;
@@ -1025,7 +1040,9 @@ void applicationLoop() {
 		}
 		return 3;
 	}).SetState(1);
+	// endregion Animación eclipse
 
+	// region Animación lambo
 	lamboAnimation.AddState(0, [&lamboVariables](float) -> int
 	{
 		switch (lamboVariables.numberAdvance)
@@ -1077,6 +1094,52 @@ void applicationLoop() {
 	{
 		lamboVariables.rotDoorLeft += 0.35f;
 		return lamboVariables.rotDoorLeft >= 45.0f ? 4 : 3;
+	}).AddState(4, [](float) -> int { return 4; }).SetState(0);
+	// endregion Animación lambo
+
+	helicAnimation.AddState(0, [&avanceHelicoptero](float) -> int
+	{
+		modelMatrixHeli = glm::translate(modelMatrixHeli, {0.0f, 0.0f, 0.2f});
+		avanceHelicoptero += 0.2f;
+
+		if (avanceHelicoptero > 40.0f)
+		{
+			avanceHelicoptero = 0.0f;
+			return 1;
+		}
+
+		return 0;
+	}).AddState(1, [&giroHelicoptero](float) -> int
+	{
+		modelMatrixHeli = glm::rotate(modelMatrixHeli, glm::radians(0.5f), {0.0f, 1.0f, 0.0f});
+
+		giroHelicoptero += 0.5f;
+
+		if (giroHelicoptero > 180.0f)
+			return 2;
+
+		return 1;
+	}).AddState(2, [&avanceHelicoptero](float) -> int
+	{
+		constexpr float descenso = 0.05f;
+		modelMatrixHeli = glm::translate(modelMatrixHeli, {0.0f, -descenso, 0.0f});
+		avanceHelicoptero += descenso;
+
+		if (avanceHelicoptero >= 9.9f)
+			return 3;
+
+		return 2;
+	}).AddState(3, [&giroHelices](float) -> int
+	{
+		giroHelices -= 0.005f;
+
+		if (giroHelices <= 0)
+		{
+			giroHelices = 0.0f;
+			return 4;
+		}
+
+		return 3;
 	}).AddState(4, [](float) -> int { return 4; }).SetState(0);
 
 	// Variables to interpolation key frames
@@ -1304,6 +1367,8 @@ void applicationLoop() {
 		// endregion Eclipse
 
 		// region Helicopter
+		rotHelHelY += giroHelices;
+
 		glm::mat4 modelMatrixHeliChasis = glm::mat4(modelMatrixHeli);
 		modelHeliChasis.render(modelMatrixHeliChasis);
 
@@ -1312,6 +1377,12 @@ void applicationLoop() {
 		modelMatrixHeliHeli = glm::rotate(modelMatrixHeliHeli, rotHelHelY, glm::vec3(0, 1, 0));
 		modelMatrixHeliHeli = glm::translate(modelMatrixHeliHeli, glm::vec3(0.0, 0.0, 0.249548));
 		modelHeliHeli.render(modelMatrixHeliHeli);
+
+		auto modelMatrixBackHeli = glm::mat4(modelMatrixHeliChasis);
+		modelMatrixBackHeli = glm::translate(modelMatrixBackHeli, {0.364f,  2.091, -5.649});
+		modelMatrixBackHeli = glm::rotate(modelMatrixBackHeli, rotHelHelY, {1.0f, 0.0f, 0.0f});
+		modelHeliHeliBack.render(modelMatrixBackHeli);
+
 		// endregion Helicopter
 
 		// region Lambo
@@ -1512,7 +1583,12 @@ void applicationLoop() {
 
 		// region ExtraModels
 
-		modelTwoB.render();
+		modelTwoB.render(modelMatrixTwoB);
+
+		auto modelMatrixTurret = glm::mat4(1.0f);
+		modelMatrixTurret = glm::translate(modelMatrixTurret, {0.0f, 0.0f, 0.0f});
+		modelMatrixTurret = glm::scale(modelMatrixTurret, {0.04f, 0.04f, 0.04f});
+		modelTurret.render(modelMatrixTurret);
 
 		// endregion ExtraModels
 
@@ -1533,9 +1609,6 @@ void applicationLoop() {
 		glCullFace(oldCullFaceMode);
 		glDepthFunc(oldDepthFuncMode);
 		// endregion Skybox
-
-		// Constantes de animaciones
-		rotHelHelY += 0.5;
 
 		// region Darth Vader animations
 		if (record && modelSelected == 1)
@@ -1701,6 +1774,7 @@ void applicationLoop() {
 
 		eclipseAnimation.Update(static_cast<float>(deltaTime));
 		lamboAnimation.Update(static_cast<float>(deltaTime));
+		helicAnimation.Update(static_cast<float>(deltaTime));
 
 		glfwSwapBuffers(window);
 	}
