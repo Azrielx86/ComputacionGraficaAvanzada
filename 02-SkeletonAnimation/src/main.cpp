@@ -93,7 +93,7 @@ Model modelBuzzLeftHand;
 // Carga de modelos animados
 Model cowboyModelAnimate;
 Model guardianModelAnimate;
-Model mayowModelAnimate;
+Model twoBRigModelAnimate;
 Model cyborgModelAnimate;
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
@@ -133,7 +133,7 @@ glm::mat4 modelMatrixCyborg(1.0f);
 
 int animationCowboyIndex = 1;
 int animationGuardianIndex = 1;
-int animationMayowIndex = 1;
+int animationTwoBRigIndex = 1;
 int animationCyborgIndex = 1;
 
 float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRightArm = 0.0, rotDartRightHand = 0.0, rotDartLeftLeg = 0.0, rotDartRightLeg = 0.0;
@@ -341,8 +341,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	guardianModelAnimate.loadModel("../models/boblampclean/boblampclean.md5mesh");
 	guardianModelAnimate.setShader(&shaderMulLighting);
 
-	mayowModelAnimate.loadModel("../models/mayow/personaje.fbx");
-	mayowModelAnimate.setShader(&shaderMulLighting);
+	twoBRigModelAnimate.loadModel("../models/mayow/personaje.fbx");
+	twoBRigModelAnimate.setShader(&shaderMulLighting);
 
 	cyborgModelAnimate.loadModel("../models/cyborg/Cyborg-2026-1.fbx");
 	cyborgModelAnimate.setShader(&shaderMulLighting);
@@ -571,7 +571,7 @@ void destroy() {
 	modelBuzzLeftHand.destroy();
 	modelBuzzTorso.destroy();
 
-	mayowModelAnimate.destroy();
+	twoBRigModelAnimate.destroy();
 	// cyborgModelAnimate.destroy();
 	cowboyModelAnimate.destroy();
 	guardianModelAnimate.destroy();
@@ -1160,7 +1160,7 @@ void applicationLoop() {
 		modelMatrixGuardianBody = glm::scale(modelMatrixGuardianBody, glm::vec3(0.1f));
 		guardianModelAnimate.render(modelMatrixGuardianBody);
 
-		mayowModelAnimate.render(glm::scale(modelMatrixMayow, glm::vec3(0.02)));
+		twoBRigModelAnimate.render(glm::scale(modelMatrixMayow, glm::vec3(0.02)));
 
 		cyborgModelAnimate.render(glm::scale(modelMatrixCyborg, glm::vec3(0.01f)));
 

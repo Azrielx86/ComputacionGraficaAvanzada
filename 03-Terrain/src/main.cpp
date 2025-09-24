@@ -94,7 +94,7 @@ Model modelBuzzLeftForeArm;
 Model modelBuzzLeftHand;
 // Modelos animados
 // Mayow
-Model mayowModelAnimate;
+Model twoBRigModelAnimate;
 // Cowboy
 Model cowboyModelAnimate;
 // Guardian con lampara
@@ -116,12 +116,12 @@ GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
 GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
 GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
 
-std::string fileNames[6] = { "../Textures/mp_bloodvalley/blood-valley_ft.tga",
-		"../Textures/mp_bloodvalley/blood-valley_bk.tga",
-		"../Textures/mp_bloodvalley/blood-valley_up.tga",
-		"../Textures/mp_bloodvalley/blood-valley_dn.tga",
-		"../Textures/mp_bloodvalley/blood-valley_rt.tga",
-		"../Textures/mp_bloodvalley/blood-valley_lf.tga" };
+std::string fileNames[6] = { "../Textures/sky_cubemap/px.png",
+		"../Textures/sky_cubemap/nx.png",
+		"../Textures/sky_cubemap/py.png",
+		"../Textures/sky_cubemap/ny.png",
+		"../Textures/sky_cubemap/pz.png",
+		"../Textures/sky_cubemap/nz.png" };
 
 bool exitApp = false;
 int lastMousePosX, offsetX = 0;
@@ -135,12 +135,12 @@ glm::mat4 modelMatrixLambo = glm::mat4(1.0);
 glm::mat4 modelMatrixAircraft = glm::mat4(1.0);
 glm::mat4 modelMatrixDart = glm::mat4(1.0f);
 glm::mat4 modelMatrixBuzz = glm::mat4(1.0f);
-glm::mat4 modelMatrixMayow = glm::mat4(1.0f);
+glm::mat4 modelMatrixTwoBRig = glm::mat4(1.0f);
 glm::mat4 modelMatrixCowboy = glm::mat4(1.0f);
 glm::mat4 modelMatrixGuardian = glm::mat4(1.0f);
 glm::mat4 modelMatrixCyborg = glm::mat4(1.0f);
 
-int animationMayowIndex = 1;
+int animationTwoBRigIndex = 1;
 float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRightArm = 0.0, rotDartRightHand = 0.0, rotDartLeftLeg = 0.0, rotDartRightLeg = 0.0;
 float rotBuzzHead = 0.0, rotBuzzLeftarm = 0.0, rotBuzzLeftForeArm = 0.0, rotBuzzLeftHand = 0.0;
 int modelSelected = 0;
@@ -353,8 +353,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelBuzzLeftHand.setShader(&shaderMulLighting);
 
 	// Mayow
-	mayowModelAnimate.loadModel("../models/mayow/personaje2.fbx");
-	mayowModelAnimate.setShader(&shaderMulLighting);
+	twoBRigModelAnimate.loadModel("../models/2b/2b_rig.fbx");
+	twoBRigModelAnimate.setShader(&shaderMulLighting);
 	
 	// Cowboy
 	cowboyModelAnimate.loadModel("../models/cowboy/Character Running.fbx");
@@ -583,7 +583,7 @@ void destroy() {
 	modelBuzzLeftForeArm.destroy();
 	modelBuzzLeftHand.destroy();
 	modelBuzzTorso.destroy();
-	mayowModelAnimate.destroy();
+	twoBRigModelAnimate.destroy();
 	cowboyModelAnimate.destroy();
 	guardianModelAnimate.destroy();
 	cyborgModelAnimate.destroy();
@@ -801,19 +801,19 @@ bool processInput(bool continueApplication) {
 
 	// Controles de mayow
 	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
-		modelMatrixMayow = glm::rotate(modelMatrixMayow, 0.02f, glm::vec3(0, 1, 0));
-		animationMayowIndex = 0;
+		modelMatrixTwoBRig = glm::rotate(modelMatrixTwoBRig, 0.02f, glm::vec3(0, 1, 0));
+		animationTwoBRigIndex = 1;
 	} else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
-		modelMatrixMayow = glm::rotate(modelMatrixMayow, -0.02f, glm::vec3(0, 1, 0));
-		animationMayowIndex = 0;
+		modelMatrixTwoBRig = glm::rotate(modelMatrixTwoBRig, -0.02f, glm::vec3(0, 1, 0));
+		animationTwoBRigIndex = 1;
 	}
 	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
-		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0.0, 0.0, 0.02));
-		animationMayowIndex = 0;
+		modelMatrixTwoBRig = glm::translate(modelMatrixTwoBRig, glm::vec3(0.0, 0.0, 0.04));
+		animationTwoBRigIndex = 1;
 	}
 	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
-		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0.0, 0.0, -0.02));
-		animationMayowIndex = 0;
+		modelMatrixTwoBRig = glm::translate(modelMatrixTwoBRig, glm::vec3(0.0, 0.0, -0.04));
+		animationTwoBRigIndex = 1;
 	}
 
 	glfwPollEvents();
@@ -845,8 +845,8 @@ void applicationLoop() {
 
 	modelMatrixBuzz = glm::translate(modelMatrixBuzz, glm::vec3(15.0, 0.0, -10.0));
 
-	modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(13.0f, 0.05f, -5.0f));
-	modelMatrixMayow = glm::rotate(modelMatrixMayow, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+	modelMatrixTwoBRig = glm::translate(modelMatrixTwoBRig, glm::vec3(13.0f, 0.05f, -5.0f));
+	// modelMatrixTwoBRig = glm::rotate(modelMatrixTwoBRig, glm::radians(-90.0f), glm::vec3(0, 1, 0));
 
 	modelMatrixCowboy = glm::translate(modelMatrixCowboy, glm::vec3(13.0, 0.05, 0.0));
 
@@ -1098,20 +1098,20 @@ void applicationLoop() {
 		/*****************************************
 		 * Objetos animados por huesos
 		 * **************************************/
-		modelMatrixMayow[3][1] = terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
-		glm::vec3 ejey = terrain.getNormalTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
+		modelMatrixTwoBRig[3][1] = terrain.getHeightTerrain(modelMatrixTwoBRig[3][0], modelMatrixTwoBRig[3][2]);
+		glm::vec3 ejey = terrain.getNormalTerrain(modelMatrixTwoBRig[3][0], modelMatrixTwoBRig[3][2]);
 		ejey = glm::normalize(ejey);
-		glm::vec3 ejex = modelMatrixMayow[0];
+		glm::vec3 ejex = modelMatrixTwoBRig[0];
 		glm::vec3 ejez = glm::normalize(glm::cross(ejex, ejey));
 		ejex = glm::normalize(glm::cross(ejey, ejez));
-		modelMatrixMayow[0] = glm::vec4(ejex, 0);
-		modelMatrixMayow[1] = glm::vec4(ejey, 0);
-		modelMatrixMayow[2] = glm::vec4(ejez, 0);
-		glm::mat4 modelMatrixMayowBody = glm::mat4(modelMatrixMayow);
-		modelMatrixMayowBody = glm::scale(modelMatrixMayowBody, glm::vec3(0.021f));
-		mayowModelAnimate.setAnimationIndex(animationMayowIndex);
-		mayowModelAnimate.render(modelMatrixMayowBody);
-		animationMayowIndex = 1;
+		modelMatrixTwoBRig[0] = glm::vec4(ejex, 0);
+		modelMatrixTwoBRig[1] = glm::vec4(ejey, 0);
+		modelMatrixTwoBRig[2] = glm::vec4(ejez, 0);
+		glm::mat4 modelMatrixTwoBBody = glm::mat4(modelMatrixTwoBRig);
+		modelMatrixTwoBBody = glm::scale(modelMatrixTwoBBody, glm::vec3(1.5f));
+		twoBRigModelAnimate.setAnimationIndex(animationTwoBRigIndex);
+		twoBRigModelAnimate.render(modelMatrixTwoBBody);
+		animationTwoBRigIndex = 0;
 
 		glm::mat4 modelMatrixCowboyBody = glm::mat4(modelMatrixCowboy);
 		modelMatrixCowboyBody = glm::scale(modelMatrixCowboyBody, glm::vec3(0.0021f));
