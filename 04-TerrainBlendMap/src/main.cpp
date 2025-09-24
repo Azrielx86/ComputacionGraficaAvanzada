@@ -50,6 +50,7 @@ Shader shader;
 Shader shaderSkybox;
 //Shader con multiples luces
 Shader shaderMulLighting;
+Shader shaderTerrain;
 
 std::shared_ptr<FirstPersonCamera> camera(new FirstPersonCamera());
 
@@ -102,10 +103,11 @@ Model guardianModelAnimate;
 // Cybog
 Model cyborgModelAnimate;
 // Terrain model instance
-Terrain terrain(-1, -1, 200, 8, "../Textures/heightmap.png");
+Terrain terrain(-1, -1, 200, 32, "../Textures/heightmap.png");
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint skyboxTextureID;
+GLuint textureTerrainRId, textureTerrainGId, textureTerrainBId, textureTerrainBlendId;
 
 GLenum types[6] = {
 GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -218,6 +220,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, 4);
 
 	if (bFullScreen)
 		window = glfwCreateWindow(width, height, strTitle.c_str(),
@@ -256,11 +259,13 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_MULTISAMPLE);
 
 	// Inicialización de los shaders
 	shader.initialize("../Shaders/colorShader.vs", "../Shaders/colorShader.fs");
 	shaderSkybox.initialize("../Shaders/skyBox.vs", "../Shaders/skyBox.fs");
 	shaderMulLighting.initialize("../Shaders/iluminacion_textura_animation.vs", "../Shaders/multipleLights.fs");
+	shaderTerrain.initialize("../Shaders/terrain.vs", "../Shaders/terrain.frag");
 
 	// Inicializacion de los objetos.
 	skyboxSphere.init();
@@ -338,7 +343,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelDartLegoRightLeg.loadModel("../models/LegoDart/LeoDart_right_leg.obj");
 	modelDartLegoRightLeg.setShader(&shaderMulLighting);
 
-	
+
 	// Buzz
 	modelBuzzTorso.loadModel("../models/buzz/buzzlightyTorso.obj");
 	modelBuzzTorso.setShader(&shaderMulLighting);
@@ -354,7 +359,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	// Mayow
 	mayowModelAnimate.loadModel("../models/mayow/personaje2.fbx");
 	mayowModelAnimate.setShader(&shaderMulLighting);
-	
+
 	// Cowboy
 	cowboyModelAnimate.loadModel("../models/cowboy/Character Running.fbx");
 	cowboyModelAnimate.setShader(&shaderMulLighting);
@@ -369,10 +374,10 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 
 	// Terreno
 	terrain.init();
-	terrain.setShader(&shaderMulLighting);
+	terrain.setShader(&shaderTerrain);
 
 	camera->setPosition(glm::vec3(0.0, 3.0, 4.0));
-	
+
 	// Carga de texturas para el skybox
 	Texture skyboxTexture = Texture("");
 	glGenTextures(1, &skyboxTextureID);
@@ -527,9 +532,83 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 		textureLandingPad.getChannels() == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, textureLandingPad.getData());
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
-	else 
+	else
 		std::cout << "Fallo la carga de textura" << std::endl;
 	textureLandingPad.freeImage(); // Liberamos memoria
+
+	Texture textureTerrainBlendMap("../Textures/blendMap.png");
+	textureTerrainBlendMap.loadImage(); // Cargar la textura
+	glGenTextures(1, &textureTerrainBlendId); // Creando el id de la textura del landingpad
+	glBindTexture(GL_TEXTURE_2D, textureTerrainBlendId); // Se enlaza la textura
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrapping en el eje u
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Wrapping en el eje v
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Filtering de minimización
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Filtering de maximimizacion
+	if(textureTerrainBlendMap.getData()){
+		// Transferir los datos de la imagen a la tarjeta
+		glTexImage2D(GL_TEXTURE_2D, 0, textureTerrainBlendMap.getChannels() == 3 ? GL_RGB : GL_RGBA, textureTerrainBlendMap.getWidth(), textureTerrainBlendMap.getHeight(), 0,
+		textureTerrainBlendMap.getChannels() == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, textureTerrainBlendMap.getData());
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+		std::cout << "Fallo la carga de textura" << std::endl;
+	textureTerrainBlendMap.freeImage(); // Liberamos memoria
+
+	Texture textureTerrainR("../Textures/mud.png");
+	textureTerrainR.loadImage(); // Cargar la textura
+	glGenTextures(1, &textureTerrainRId); // Creando el id de la textura del landingpad
+	glBindTexture(GL_TEXTURE_2D, textureTerrainRId); // Se enlaza la textura
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrapping en el eje u
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Wrapping en el eje v
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Filtering de minimización
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Filtering de maximimizacion
+	if(textureTerrainR.getData()){
+		// Transferir los datos de la imagen a la tarjeta
+		glTexImage2D(GL_TEXTURE_2D, 0, textureTerrainR.getChannels() == 3 ? GL_RGB : GL_RGBA, textureTerrainR.getWidth(), textureTerrainR.getHeight(), 0,
+		textureTerrainR.getChannels() == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, textureTerrainR.getData());
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+		std::cout << "Fallo la carga de textura" << std::endl;
+	textureTerrainR.freeImage(); // Liberamos memoria
+
+	Texture textureTerrainG("../Textures/grassFlowers.png");
+	textureTerrainG.loadImage(); // Cargar la textura
+	glGenTextures(1, &textureTerrainGId); // Creando el id de la textura del landingpad
+	glBindTexture(GL_TEXTURE_2D, textureTerrainGId); // Se enlaza la textura
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrapping en el eje u
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Wrapping en el eje v
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Filtering de minimización
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Filtering de maximimizacion
+	if(textureTerrainG.getData()){
+		// Transferir los datos de la imagen a la tarjeta
+		glTexImage2D(GL_TEXTURE_2D, 0, textureTerrainG.getChannels() == 3 ? GL_RGB : GL_RGBA, textureTerrainG.getWidth(), textureTerrainG.getHeight(), 0,
+		textureTerrainG.getChannels() == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, textureTerrainG.getData());
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+		std::cout << "Fallo la carga de textura" << std::endl;
+	textureTerrainG.freeImage(); // Liberamos memoria
+
+	Texture textureTerrainB("../Textures/path.png");
+	textureTerrainB.loadImage(); // Cargar la textura
+	glGenTextures(1, &textureTerrainBId); // Creando el id de la textura del landingpad
+	glBindTexture(GL_TEXTURE_2D, textureTerrainBId); // Se enlaza la textura
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrapping en el eje u
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Wrapping en el eje v
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Filtering de minimización
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Filtering de maximimizacion
+	if(textureTerrainB.getData()){
+		// Transferir los datos de la imagen a la tarjeta
+		glTexImage2D(GL_TEXTURE_2D, 0, textureTerrainB.getChannels() == 3 ? GL_RGB : GL_RGBA, textureTerrainB.getWidth(), textureTerrainB.getHeight(), 0,
+		textureTerrainB.getChannels() == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, textureTerrainB.getData());
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+		std::cout << "Fallo la carga de textura" << std::endl;
+	textureTerrainB.freeImage(); // Liberamos memoria
+
+
 
 }
 
@@ -759,7 +838,7 @@ bool processInput(bool continueApplication) {
 		modelMatrixDart = glm::translate(modelMatrixDart, glm::vec3(-0.02, 0.0, 0.0));
 	else if (modelSelected == 2 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		modelMatrixDart = glm::translate(modelMatrixDart, glm::vec3(0.02, 0.0, 0.0));
-	
+
 	// Movimientos de buzz
 	if (modelSelected == 3 && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE &&
 			glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
@@ -896,11 +975,16 @@ void applicationLoop() {
 		shaderMulLighting.setMatrix4("view", 1, false,
 				glm::value_ptr(view));
 
+		shaderTerrain.setMatrix4("projection", 1, false,
+			glm::value_ptr(projection));
+		shaderTerrain.setMatrix4("view", 1, false,
+				glm::value_ptr(view));
+
 		/*******************************************
 		 * Propiedades Luz direccional
 		 *******************************************/
 		shaderMulLighting.setVectorFloat3("viewPos", glm::value_ptr(camera->getPosition()));
-		shaderMulLighting.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.3, 0.3, 0.3)));
+		shaderMulLighting.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.9, 0.9, 0.9)));
 		shaderMulLighting.setVectorFloat3("directionalLight.light.diffuse", glm::value_ptr(glm::vec3(0.7, 0.7, 0.7)));
 		shaderMulLighting.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(0.9, 0.9, 0.9)));
 		shaderMulLighting.setVectorFloat3("directionalLight.direction", glm::value_ptr(glm::vec3(-1.0, 0.0, 0.0)));
@@ -916,6 +1000,25 @@ void applicationLoop() {
 		shaderMulLighting.setInt("pointLightCount", 0);
 
 		/*******************************************
+		 * Shader terrain
+		 *******************************************/
+		shaderTerrain.setVectorFloat3("viewPos", glm::value_ptr(camera->getPosition()));
+		shaderTerrain.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.9, 0.9, 0.9)));
+		shaderTerrain.setVectorFloat3("directionalLight.light.diffuse", glm::value_ptr(glm::vec3(0.7, 0.7, 0.7)));
+		shaderTerrain.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(0.9, 0.9, 0.9)));
+		shaderTerrain.setVectorFloat3("directionalLight.direction", glm::value_ptr(glm::vec3(-1.0, 0.0, 0.0)));
+
+		/*******************************************
+		 * Propiedades SpotLights
+		 *******************************************/
+		shaderTerrain.setInt("spotLightCount", 0);
+
+		/*******************************************
+		 * Propiedades PointLights
+		 *******************************************/
+		shaderTerrain.setInt("pointLightCount", 0);
+
+		/*******************************************
 		 * Terrain Cesped
 		 *******************************************/
 		glm::mat4 modelCesped = glm::mat4(1.0);
@@ -924,11 +1027,28 @@ void applicationLoop() {
 		// Se activa la textura del agua
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureCespedID);
-		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(80, 80)));
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, textureTerrainBlendId);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, textureTerrainRId);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, textureTerrainGId);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, textureTerrainBId);
+		shaderTerrain.setInt("backgroundTexture", 0);
+		shaderTerrain.setInt("blendMapTexture", 1);
+		shaderTerrain.setInt("rTexture", 2);
+		shaderTerrain.setInt("gTexture", 3);
+		shaderTerrain.setInt("bTexture", 4);
+		shaderTerrain.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(80, 80)));
 		terrain.setPosition(glm::vec3(100, 0, 100));
 		terrain.render();
-		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(0, 0)));
-		glBindTexture(GL_TEXTURE_2D, 0);
+		shaderTerrain.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(0, 0)));
+		for (unsigned int i = 0; i <= 4; i++)
+		{
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
 
 		/*******************************************
 		 * Custom objects obj
@@ -946,6 +1066,27 @@ void applicationLoop() {
 		// Render for the eclipse car
 		modelMatrixEclipse[3][1] = terrain.getHeightTerrain(modelMatrixEclipse[3][0], modelMatrixEclipse[3][2]);
 		glm::mat4 modelMatrixEclipseChasis = glm::mat4(modelMatrixEclipse);
+		glm::vec4 frontalL = glm::translate(modelMatrixEclipse, {2.43f, 0.0f, 4.11f})[3];
+		glm::vec4 frontalR = glm::translate(modelMatrixEclipse, {-2.43f, 0.0f, 4.11f})[3];
+		glm::vec4 rearL = glm::translate(modelMatrixEclipse, {2.43f, 0.0f, -4.34f})[3];
+		glm::vec4 rearR = glm::translate(modelMatrixEclipse, {-2.43f, 0.0f, -4.34f})[3];
+
+		frontalL.y = terrain.getHeightTerrain(frontalL.x, frontalL.z);
+		frontalR.y = terrain.getHeightTerrain(frontalR.x, frontalR.z);
+		rearL.y = terrain.getHeightTerrain(rearL.x, rearL.z);
+		rearR.y = terrain.getHeightTerrain(rearR.x, rearR.z);
+
+		glm::vec3 uVec = rearL - frontalL;
+		glm::vec3 vVec = rearR - frontalL;
+		glm::vec4 ejeYEclipse = glm::vec4(glm::normalize(glm::cross(uVec, vVec)), 1.0f);
+		glm::vec4 ejeXEclipse = modelMatrixEclipse[3];
+		glm::vec4 ejeZEclipse = glm::vec4(glm::normalize(glm::cross(glm::vec3(ejeXEclipse), glm::vec3(ejeYEclipse))), 1.0f);
+		ejeXEclipse = glm::vec4(glm::normalize(glm::cross(glm::vec3(ejeYEclipse), glm::vec3(ejeZEclipse))), 1.0f);
+
+		modelMatrixEclipseChasis[0] = ejeXEclipse;
+		modelMatrixEclipseChasis[1] = ejeYEclipse;
+		modelMatrixEclipseChasis[2] = ejeZEclipse;
+
 		modelMatrixEclipseChasis = glm::scale(modelMatrixEclipse, glm::vec3(0.5, 0.5, 0.5));
 		modelEclipseChasis.render(modelMatrixEclipseChasis);
 
@@ -1049,7 +1190,7 @@ void applicationLoop() {
 		// Se regresa el cull faces IMPORTANTE para la capa
 		glEnable(GL_CULL_FACE);
 
-		
+
 		glm::mat4 modelMatrixTorso = glm::mat4(modelMatrixBuzz);
 		modelMatrixTorso = glm::scale(modelMatrixTorso, glm::vec3(3.0));
 		modelBuzzTorso.render(modelMatrixTorso);
@@ -1129,7 +1270,7 @@ void applicationLoop() {
 		glCullFace(oldCullFaceMode);
 		glDepthFunc(oldDepthFuncMode);
 
-		
+
 		// Animaciones por keyframes dart Vader
 		// Para salvar los keyframes
 		if(record && modelSelected == 1){
@@ -1234,7 +1375,7 @@ void applicationLoop() {
 				indexFrameBuzzNext = 0;
 			modelMatrixBuzz = interpolate(keyFramesBuzz, indexFrameBuzz, indexFrameBuzzNext, 0, interpolationBuzz);
 		}
-		
+
 		/**********Maquinas de estado*************/
 		// Maquina de estados para el carro eclipse
 		switch (state){
@@ -1279,7 +1420,7 @@ void applicationLoop() {
 					numberAdvance = 1;
 			}
 			break;
-		
+
 		default:
 			break;
 		}
@@ -1298,7 +1439,7 @@ void applicationLoop() {
 				dorRotCount = 0.0;
 				stateDoor = 0;
 			}
-		
+
 		default:
 			break;
 		}
