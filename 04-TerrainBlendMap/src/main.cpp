@@ -117,12 +117,12 @@ GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
 GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
 GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
 
-std::string fileNames[6] = { "../Textures/mp_bloodvalley/blood-valley_ft.tga",
-		"../Textures/mp_bloodvalley/blood-valley_bk.tga",
-		"../Textures/mp_bloodvalley/blood-valley_up.tga",
-		"../Textures/mp_bloodvalley/blood-valley_dn.tga",
-		"../Textures/mp_bloodvalley/blood-valley_rt.tga",
-		"../Textures/mp_bloodvalley/blood-valley_lf.tga" };
+std::string fileNames[6] = { "../Textures/sky_cubemap/px.png",
+		"../Textures/sky_cubemap/nx.png",
+		"../Textures/sky_cubemap/py.png",
+		"../Textures/sky_cubemap/ny.png",
+		"../Textures/sky_cubemap/pz.png",
+		"../Textures/sky_cubemap/nz.png" };
 
 bool exitApp = false;
 int lastMousePosX, offsetX = 0;
@@ -1066,10 +1066,10 @@ void applicationLoop() {
 		// Render for the eclipse car
 		modelMatrixEclipse[3][1] = terrain.getHeightTerrain(modelMatrixEclipse[3][0], modelMatrixEclipse[3][2]);
 		glm::mat4 modelMatrixEclipseChasis = glm::mat4(modelMatrixEclipse);
-		glm::vec4 frontalL = glm::translate(modelMatrixEclipse, {2.43f, 0.0f, 4.11f})[3];
-		glm::vec4 frontalR = glm::translate(modelMatrixEclipse, {-2.43f, 0.0f, 4.11f})[3];
-		glm::vec4 rearL = glm::translate(modelMatrixEclipse, {2.43f, 0.0f, -4.34f})[3];
-		glm::vec4 rearR = glm::translate(modelMatrixEclipse, {-2.43f, 0.0f, -4.34f})[3];
+		glm::vec4 frontalL = glm::translate(modelMatrixEclipseChasis, {2.43f, 0.0f, 4.11f})[3];
+		glm::vec4 frontalR = glm::translate(modelMatrixEclipseChasis, {-2.43f, 0.0f, 4.11f})[3];
+		glm::vec4 rearL = glm::translate(modelMatrixEclipseChasis, {2.43f, 0.0f, -4.34f})[3];
+		glm::vec4 rearR = glm::translate(modelMatrixEclipseChasis, {-2.43f, 0.0f, -4.34f})[3];
 
 		frontalL.y = terrain.getHeightTerrain(frontalL.x, frontalL.z);
 		frontalR.y = terrain.getHeightTerrain(frontalR.x, frontalR.z);
@@ -1078,16 +1078,16 @@ void applicationLoop() {
 
 		glm::vec3 uVec = rearL - frontalL;
 		glm::vec3 vVec = rearR - frontalL;
-		glm::vec4 ejeYEclipse = glm::vec4(glm::normalize(glm::cross(uVec, vVec)), 1.0f);
-		glm::vec4 ejeXEclipse = modelMatrixEclipse[3];
-		glm::vec4 ejeZEclipse = glm::vec4(glm::normalize(glm::cross(glm::vec3(ejeXEclipse), glm::vec3(ejeYEclipse))), 1.0f);
-		ejeXEclipse = glm::vec4(glm::normalize(glm::cross(glm::vec3(ejeYEclipse), glm::vec3(ejeZEclipse))), 1.0f);
+		glm::vec4 ejeYEclipse = glm::vec4(glm::normalize(glm::cross(uVec, vVec)), 0.0f);
+		glm::vec4 ejeXEclipse = modelMatrixEclipseChasis[0];
+		glm::vec4 ejeZEclipse = glm::vec4(glm::normalize(glm::cross(glm::vec3(ejeXEclipse), glm::vec3(ejeYEclipse))), 0.0f);
+		ejeXEclipse = glm::vec4(glm::normalize(glm::cross(glm::vec3(ejeYEclipse), glm::vec3(ejeZEclipse))), 0.0f);
 
 		modelMatrixEclipseChasis[0] = ejeXEclipse;
 		modelMatrixEclipseChasis[1] = ejeYEclipse;
 		modelMatrixEclipseChasis[2] = ejeZEclipse;
 
-		modelMatrixEclipseChasis = glm::scale(modelMatrixEclipse, glm::vec3(0.5, 0.5, 0.5));
+		modelMatrixEclipseChasis = glm::scale(modelMatrixEclipseChasis, glm::vec3(0.5, 0.5, 0.5));
 		modelEclipseChasis.render(modelMatrixEclipseChasis);
 
 		glm::mat4 modelMatrixFrontalWheels = glm::mat4(modelMatrixEclipseChasis);
