@@ -103,7 +103,7 @@ Model guardianModelAnimate;
 Model cyborgModelAnimate;
 
 // Objeto del terreno
-Terrain terrain(-1, -1, 200, 8.0, "../Textures/HeightMap01.png");
+Terrain terrain(-1, -1, 200, 16.0, "../Textures/azxHeightMap.png");
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint skyboxTextureID;
@@ -799,7 +799,7 @@ bool processInput(bool continueApplication) {
 	else if (modelSelected == 2 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		modelMatrixBuzz = glm::translate(modelMatrixBuzz, glm::vec3(0.0, 0.0, -0.02));
 
-	// Controles de mayow
+	// Controles de 2B
 	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
 		modelMatrixTwoBRig = glm::rotate(modelMatrixTwoBRig, 0.02f, glm::vec3(0, 1, 0));
 		animationTwoBRigIndex = 1;
@@ -883,7 +883,7 @@ void applicationLoop() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f),
-				(float) screenWidth / (float) screenHeight, 0.01f, 100.0f);
+				(float) screenWidth / (float) screenHeight, 0.01f, 256.0f);
 		glm::mat4 view = camera->getViewMatrix();
 
 		// Settea la matriz de vista y projection al shader con solo color
